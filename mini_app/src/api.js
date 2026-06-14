@@ -12,7 +12,10 @@ async function apiFetch(path, options = {}) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+    const detail = Array.isArray(err.detail)
+      ? err.detail.map((e) => e.msg || JSON.stringify(e)).join(", ")
+      : err.detail || `HTTP ${res.status}`;
+    throw new Error(String(detail));
   }
 
   return res.json();

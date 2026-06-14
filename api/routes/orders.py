@@ -90,7 +90,7 @@ def validate_telegram_init_data(init_data: str, bot_token: str) -> dict:
 @router.post("/orders", response_model=OrderOut)
 async def create_order(
     order_in: OrderIn,
-    x_telegram_init_data: str = Header(..., description="Telegram WebApp.initData"),
+    x_telegram_init_data: str = Header(default="", description="Telegram WebApp.initData"),
 ):
     """
     Оформлення замовлення з Mini App.
@@ -102,11 +102,14 @@ async def create_order(
     5. Надсилаємо сповіщення адміну
     """
     # ── Крок 1: валідація підпису ─────────────────────────────────────────────
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Telegram initData відсутній. Відкрийте магазин через бота.")
+
     tg_user = validate_telegram_init_data(x_telegram_init_data, settings.BOT_TOKEN)
     tg_id = tg_user.get("id")
 
     if not tg_id:
-        raise HTTPException(status_code=401, detail="Cannot extract user ID from initData")
+        raise HTTPException(status_code=401, detail="Не вдалося отримати ID користувача з Telegram")
 
     # ── Крок 2: знайти юзера в БД ────────────────────────────────────────────
     async with get_session() as session:

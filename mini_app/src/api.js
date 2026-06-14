@@ -2,7 +2,7 @@
 // Централізовані запити до FastAPI бекенду.
 // BASE_URL — в продакшені замініть на ваш домен.
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {

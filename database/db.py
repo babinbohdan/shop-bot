@@ -30,7 +30,7 @@ AsyncSessionFactory = async_sessionmaker(
 async def init_db() -> None:
     """Створює всі таблиці (якщо не існують)."""
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
     logger.info("Database initialized")
 
 

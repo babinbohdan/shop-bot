@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs        # логи зберігаються на хості
+      - ./shop.db:/app/shop.db  # SQLite (прибрати при переході на PG)
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── PostgreSQL (вмикайте при переході з SQLite) ───────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shop_db
+      POSTGRES_USER: shop_user
+      POSTGRES_PASSWORD: shop_password
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop_user -d shop_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "5432:5432"   # тільки для локальної розробки; в продакшені приберіть
+
+volumes:
+  pg_data:

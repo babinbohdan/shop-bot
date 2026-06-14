@@ -1,0 +1,25 @@
+# Telegram Bot
+aiogram==3.7.0
+
+# Web API (для Mini App)
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Database
+sqlalchemy==2.0.30
+aiosqlite==0.20.0         # SQLite (локальна розробка)
+asyncpg==0.29.0           # PostgreSQL (продакшен)
+
+# Configuration
+pydantic-settings==2.3.0
+
+# Scheduler
+APScheduler==3.10.4
+
+# Parser / HTTP
+aiohttp==3.9.5
+beautifulsoup4==4.12.3
+lxml==5.2.2
+
+# CSV import
+pandas==2.2.2

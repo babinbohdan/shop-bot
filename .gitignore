@@ -1,0 +1,22 @@
+# Секрети — НЕ комітити!
+.env
+
+# База даних (на сервері буде своя)
+shop.db
+*.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Logs
+logs/*.log
+
+# Node (npm install виконується локально)
+mini_app/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -33,6 +33,8 @@ async def run_bot():
 
 async def start():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    from database.db import init_db
+    await init_db()
     await asyncio.gather(run_api(), run_bot())
 
 

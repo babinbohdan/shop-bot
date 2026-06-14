@@ -22,15 +22,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from database.db import init_db
 from api.routes.products import router as products_router
 from api.routes.orders import router as orders_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Ініціалізація БД при старті FastAPI."""
-    await init_db()
+    """Lifespan — DB ініціалізується в run_all.py, тут просто yield."""
     yield
 
 

@@ -11,7 +11,6 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import settings
-from database.db import init_db
 from handlers import registration, catalog, cart, admin, common
 from middlewares.auth import AuthMiddleware
 from scheduler.tasks import start_scheduler
@@ -23,10 +22,7 @@ logger = get_logger(__name__)
 
 
 async def main() -> None:
-    # 1. Ініціалізація БД (створює таблиці, якщо не існують)
-    await init_db()
-
-    # 2. Ініціалізація бота та диспетчера
+    # 1. Ініціалізація бота та диспетчера (DB ініціалізується в run_all.py)
     bot = Bot(
         token=settings.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),

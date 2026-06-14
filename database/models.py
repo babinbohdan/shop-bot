@@ -62,7 +62,7 @@ class Product(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     # supplier_id = Идентификатор_товара з CSV — головний ключ синхронізації
-    supplier_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True, index=True)
+    supplier_id: Mapped[int | None] = mapped_column(Integer, unique=True, nullable=True)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey("categories.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="")

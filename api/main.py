@@ -49,18 +49,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Health check — ПЕРЕД static mount, інакше "/" перехоплює запит
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 # API роутери
 app.include_router(products_router, prefix="/api")
 app.include_router(orders_router, prefix="/api")
 
-# Статичні файли Mini App (React build)
-# Nginx в продакшені роздає їх напряму, але для розробки — через FastAPI
+# Статичні файли Mini App (React build) — монтуємо ОСТАННІМИ
 try:
     app.mount("/", StaticFiles(directory="mini_app/dist", html=True), name="mini_app")
 except Exception:
     pass  # папка ще не існує під час розробки
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}

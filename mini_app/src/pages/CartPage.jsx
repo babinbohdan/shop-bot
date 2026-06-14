@@ -168,7 +168,7 @@ export default function CartPage({ onBack }) {
 }
 
 const styles = {
-  page: { padding: "16px", paddingBottom: 100 },
+  page: { padding: "16px", paddingBottom: 160 },
   title: { fontSize: 18, fontWeight: 700, margin: "0 0 16px", color: "#1a1a1a" },
 
   list: { display: "flex", flexDirection: "column", gap: 12 },
@@ -225,7 +225,7 @@ const styles = {
   },
 
   footer: {
-    position: "fixed", bottom: 0, left: 0, right: 0,
+    position: "fixed", bottom: 60, left: 0, right: 0,
     padding: "12px 16px", background: "#fff",
     boxShadow: "0 -2px 8px rgba(0,0,0,0.1)",
   },

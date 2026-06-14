@@ -194,6 +194,92 @@ async def create_order(
     )
 
 
+# ─── GET /api/orders/history ─────────────────────────────────────────────────
+
+STATUS_LABELS = {
+    "new": "🆕 Нове",
+    "processing": "⚙️ В обробці",
+    "shipped": "🚚 Відправлено",
+    "completed": "✅ Виконано",
+    "cancelled": "❌ Скасовано",
+}
+
+
+class OrderItemOut(BaseModel):
+    product_id: int
+    product_name: str
+    quantity: int
+    price: float
+
+
+class OrderHistoryEntry(BaseModel):
+    order_id: int
+    created_at: str
+    status: str
+    status_label: str
+    total_price: float
+    comment: str
+    items: list[OrderItemOut]
+
+
+@router.get("/orders/history", response_model=list[OrderHistoryEntry])
+async def get_order_history(
+    x_telegram_init_data: str = Header(default="", description="Telegram WebApp.initData"),
+):
+    """Історія замовлень поточного користувача."""
+    if not x_telegram_init_data:
+        raise HTTPException(status_code=401, detail="Telegram initData відсутній")
+
+    tg_user = validate_telegram_init_data(x_telegram_init_data, settings.BOT_TOKEN)
+    tg_id = tg_user.get("id")
+    if not tg_id:
+        raise HTTPException(status_code=401, detail="Не вдалося отримати ID користувача")
+
+    from database.models import OrderItem
+    from sqlalchemy.orm import selectinload
+
+    async with get_session() as session:
+        user_result = await session.execute(
+            select(User).where(User.telegram_id == tg_id)
+        )
+        user = user_result.scalar_one_or_none()
+
+    if not user:
+        return []
+
+    async with get_session() as session:
+        orders_result = await session.execute(
+            select(Order)
+            .where(Order.user_id == user.id)
+            .options(selectinload(Order.items).selectinload(OrderItem.product))
+            .order_by(Order.created_at.desc())
+            .limit(50)
+        )
+        orders = orders_result.scalars().all()
+
+    result = []
+    for order in orders:
+        items_out = []
+        for item in order.items:
+            items_out.append(OrderItemOut(
+                product_id=item.product_id,
+                product_name=item.product.name if item.product else f"Товар #{item.product_id}",
+                quantity=item.quantity,
+                price=float(item.price_at_order),
+            ))
+        result.append(OrderHistoryEntry(
+            order_id=order.id,
+            created_at=order.created_at.strftime("%d.%m.%Y %H:%M"),
+            status=order.status,
+            status_label=STATUS_LABELS.get(order.status, order.status),
+            total_price=float(order.total_price),
+            comment=order.comment or "",
+            items=items_out,
+        ))
+
+    return result
+
+
 async def _notify_admin_new_order(order_id, user, order_in, products_map, total) -> None:
     """Відправляє адміну повідомлення про нове замовлення."""
     try:

@@ -1,6 +1,5 @@
 // mini_app/src/api.js
 // Централізовані запити до FastAPI бекенду.
-// BASE_URL — в продакшені замініть на ваш домен.
 
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
@@ -23,21 +22,40 @@ async function apiFetch(path, options = {}) {
 }
 
 export const api = {
-  // Список категорій
+  // Каталог
   getCategories: () => apiFetch("/categories"),
 
-  // Товари категорії з пагінацією
-  getProducts: (categoryId, page = 1) =>
-    apiFetch(`/products?category_id=${categoryId}&page=${page}&per_page=20`),
+  // Товари категорії з фільтрами/сортуванням
+  getProducts: (categoryId, page = 1, filters = {}) => {
+    const params = new URLSearchParams({ category_id: categoryId, page, per_page: 20 });
+    if (filters.price_min != null) params.set("price_min", filters.price_min);
+    if (filters.price_max != null) params.set("price_max", filters.price_max);
+    if (filters.in_stock_only === false) params.set("in_stock_only", "false");
+    if (filters.sort) params.set("sort", filters.sort);
+    return apiFetch(`/products?${params}`);
+  },
 
-  // Деталі одного товару
+  // Пошук
+  searchProducts: (q, page = 1, sort = "name") =>
+    apiFetch(`/products/search?q=${encodeURIComponent(q)}&page=${page}&per_page=20&sort=${sort}`),
+
+  // Деталі товару
   getProduct: (productId) => apiFetch(`/products/${productId}`),
 
-  // Оформлення замовлення — передаємо initData у заголовку для валідації
+  // Схожі товари
+  getSimilarProducts: (productId) => apiFetch(`/products/${productId}/similar`),
+
+  // Оформлення замовлення
   createOrder: (payload, initData) =>
     apiFetch("/orders", {
       method: "POST",
       headers: { "x-telegram-init-data": initData },
       body: JSON.stringify(payload),
+    }),
+
+  // Історія замовлень
+  getOrderHistory: (initData) =>
+    apiFetch("/orders/history", {
+      headers: { "x-telegram-init-data": initData },
     }),
 };

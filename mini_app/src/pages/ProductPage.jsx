@@ -1,5 +1,5 @@
 // mini_app/src/pages/ProductPage.jsx
-// Картка товару — фото, опис, ціна, схожі товари.
+// Картка товару — фото, опис, ціна, ♡ вішліст, схожі товари.
 
 import { useEffect, useState } from "react";
 import { api } from "../api";
@@ -7,27 +7,34 @@ import { useCart } from "../hooks/useCart";
 import { Loader, ErrorMsg } from "./CatalogPage";
 import ProductCard from "../components/ProductCard";
 
+const tg = window.Telegram?.WebApp;
+
 export default function ProductPage({ product: initialProduct, onCart, onSelectProduct }) {
   const [product, setProduct] = useState(initialProduct);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [added, setAdded] = useState(false);
   const [similar, setSimilar] = useState([]);
+  const [wished, setWished] = useState(false);
+  const [wishLoading, setWishLoading] = useState(false);
   const { dispatch } = useCart();
 
-  // Підвантажуємо повні деталі
   useEffect(() => {
     if (!initialProduct?.id) return;
     setLoading(true);
     setAdded(false);
 
+    const initData = tg?.initData || "";
+
     Promise.all([
       api.getProduct(initialProduct.id),
       api.getSimilarProducts(initialProduct.id),
+      initData ? api.getWishlistIds(initData).catch(() => []) : Promise.resolve([]),
     ])
-      .then(([prod, sim]) => {
+      .then(([prod, sim, wishIds]) => {
         setProduct(prod);
         setSimilar(sim);
+        setWished(wishIds.includes(prod.id));
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -37,6 +44,25 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
     dispatch({ type: "ADD", product });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleWishlist = async () => {
+    const initData = tg?.initData || "";
+    if (!initData) return;
+    setWishLoading(true);
+    try {
+      if (wished) {
+        await api.removeFromWishlist(product.id, initData);
+        setWished(false);
+      } else {
+        await api.addToWishlist(product.id, initData);
+        setWished(true);
+      }
+    } catch (_) {
+      // мовчки ігноруємо
+    } finally {
+      setWishLoading(false);
+    }
   };
 
   if (loading) return <Loader text="Завантаження товару..." />;
@@ -57,16 +83,22 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
         ) : (
           <div style={styles.noImage}>🧸</div>
         )}
-        {hasDiscount && (
-          <span style={styles.badge}>−{discount}%</span>
-        )}
+        {hasDiscount && <span style={styles.badge}>−{discount}%</span>}
+
+        {/* Кнопка вішліст */}
+        <button
+          style={{ ...styles.wishBtn, ...(wished ? styles.wishBtnActive : {}) }}
+          onClick={handleWishlist}
+          disabled={wishLoading}
+          aria-label={wished ? "Видалити з бажань" : "Додати до бажань"}
+        >
+          {wished ? "❤️" : "🤍"}
+        </button>
       </div>
 
       {/* Інфо */}
       <div style={styles.info}>
-        {product.vendor && (
-          <p style={styles.vendor}>{product.vendor}</p>
-        )}
+        {product.vendor && <p style={styles.vendor}>{product.vendor}</p>}
         <h1 style={styles.name}>{product.name}</h1>
 
         {/* Ціна */}
@@ -97,11 +129,8 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
           </div>
         )}
 
-        {/* Мета */}
         <p style={styles.meta}>Категорія: {product.category_name}</p>
-        {product.barcode && (
-          <p style={styles.meta}>Штрихкод: {product.barcode}</p>
-        )}
+        {product.barcode && <p style={styles.meta}>Штрихкод: {product.barcode}</p>}
       </div>
 
       {/* Схожі товари */}
@@ -111,17 +140,13 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
           <div style={styles.similarScroll}>
             {similar.map((p) => (
               <div key={p.id} style={styles.similarCard}>
-                <ProductCard
-                  product={p}
-                  onClick={() => onSelectProduct && onSelectProduct(p)}
-                />
+                <ProductCard product={p} onClick={() => onSelectProduct && onSelectProduct(p)} />
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Відступ для фіксованої кнопки */}
       <div style={{ height: 80 }} />
 
       {/* Кнопка "Додати в кошик" */}
@@ -151,6 +176,16 @@ const styles = {
     padding: "3px 10px", borderRadius: 8,
     fontSize: 13, fontWeight: 700,
   },
+  wishBtn: {
+    position: "absolute", top: 12, left: 12,
+    width: 36, height: 36,
+    background: "rgba(255,255,255,0.9)",
+    border: "none", borderRadius: "50%",
+    fontSize: 18, cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+  },
+  wishBtnActive: { background: "#ffebee" },
 
   info: { padding: "16px 16px 0" },
   vendor: { fontSize: 12, color: "#888", margin: "0 0 4px" },
@@ -161,8 +196,7 @@ const styles = {
   oldPrice: { fontSize: 14, color: "#bbb", textDecoration: "line-through" },
   saveBadge: {
     background: "#ffebee", color: "#e53935",
-    fontSize: 11, fontWeight: 700,
-    padding: "2px 8px", borderRadius: 6,
+    fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 6,
   },
 
   stockRow: { marginBottom: 14 },
@@ -178,21 +212,15 @@ const styles = {
   similarSection: { padding: "16px 16px 0" },
   similarTitle: { fontSize: 15, fontWeight: 700, margin: "0 0 10px", color: "#1a1a1a" },
   similarScroll: {
-    display: "flex",
-    gap: 10,
-    overflowX: "auto",
-    paddingBottom: 8,
-    scrollbarWidth: "none",
+    display: "flex", gap: 10, overflowX: "auto",
+    paddingBottom: 8, scrollbarWidth: "none",
   },
   similarCard: { minWidth: 140, maxWidth: 140, flexShrink: 0 },
 
   footer: {
-    position: "fixed",
-    bottom: 60, left: 0, right: 0,
-    padding: "10px 16px",
-    background: "#fff",
-    boxShadow: "0 -2px 8px rgba(0,0,0,0.10)",
-    zIndex: 100,
+    position: "fixed", bottom: 60, left: 0, right: 0,
+    padding: "10px 16px", background: "#fff",
+    boxShadow: "0 -2px 8px rgba(0,0,0,0.10)", zIndex: 100,
   },
   addBtn: {
     width: "100%", padding: "14px",

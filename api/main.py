@@ -24,6 +24,8 @@ from fastapi.staticfiles import StaticFiles
 
 from api.routes.products import router as products_router
 from api.routes.orders import router as orders_router
+from api.routes.promo import router as promo_router
+from api.routes.wishlist import router as wishlist_router
 
 
 @asynccontextmanager
@@ -57,6 +59,8 @@ async def health():
 # API роутери
 app.include_router(products_router, prefix="/api")
 app.include_router(orders_router, prefix="/api")
+app.include_router(promo_router, prefix="/api")
+app.include_router(wishlist_router, prefix="/api")
 
 # Статичні файли Mini App (React build) — монтуємо ОСТАННІМИ
 try:

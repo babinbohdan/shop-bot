@@ -8,7 +8,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     BigInteger, Boolean, DateTime, ForeignKey,
-    Index, Integer, Numeric, String, Text, func,
+    Index, Integer, Numeric, String, Text, UniqueConstraint, func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -34,6 +34,7 @@ class User(Base):
 
     cart_items: Mapped[list["CartItem"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     orders: Mapped[list["Order"]] = relationship(back_populates="user")
+    wishlist_items: Mapped[list["WishlistItem"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 # ─── Categories ───────────────────────────────────────────────────────────────
@@ -107,7 +108,9 @@ class CartItem(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, default=1)
+
     added_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # час останнього нагадування
 
     user: Mapped["User"] = relationship(back_populates="cart_items")
     product: Mapped["Product"] = relationship(back_populates="cart_items")
@@ -142,3 +145,39 @@ class OrderItem(Base):
 
     order: Mapped["Order"] = relationship(back_populates="items")
     product: Mapped["Product"] = relationship(back_populates="order_items")
+
+
+# ─── Promo Codes ──────────────────────────────────────────────────────────────
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    # discount_type: "percent" | "fixed"
+    discount_type: Mapped[str] = mapped_column(String(10), nullable=False, default="percent")
+    discount_value: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    max_uses: Mapped[int | None] = mapped_column(Integer, nullable=True)       # None = безліміт
+    used_count: Mapped[int] = mapped_column(Integer, default=0)
+    min_order_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+# ─── Wishlist ─────────────────────────────────────────────────────────────────
+
+class WishlistItem(Base):
+    __tablename__ = "wishlist_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey("products.id"), nullable=False)
+    added_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="wishlist_items")
+    product: Mapped["Product"] = relationship()
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "product_id", name="uq_wishlist_user_product"),
+    )

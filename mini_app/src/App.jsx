@@ -7,12 +7,13 @@ import ProductPage from "./pages/ProductPage";
 import CartPage from "./pages/CartPage";
 import SearchPage from "./pages/SearchPage";
 import OrdersPage from "./pages/OrdersPage";
+import WishlistPage from "./pages/WishlistPage";
 import { CartProvider, useCart } from "./hooks/useCart";
 
 const tg = window.Telegram?.WebApp;
 
 // Типи сторінок де кнопка "назад" Telegram потрібна
-const BACK_PAGES = new Set(["category", "product", "cart", "search", "orders"]);
+const BACK_PAGES = new Set(["category", "product", "cart", "search", "orders", "wishlist"]);
 
 function AppInner() {
   const [page, setPage] = useState("catalog");
@@ -83,6 +84,9 @@ function AppInner() {
         />
       )}
       {page === "orders" && <OrdersPage />}
+      {page === "wishlist" && (
+        <WishlistPage onSelectProduct={(p) => navigate("product", { product: p })} />
+      )}
 
       {/* Нижня навігаційна панель */}
       {showNavbar && (
@@ -96,6 +100,7 @@ function BottomNav({ current, cartCount, onNavigate }) {
   const items = [
     { key: "catalog",  icon: "🏠", label: "Каталог" },
     { key: "search",   icon: "🔍", label: "Пошук" },
+    { key: "wishlist", icon: "🤍", label: "Бажання" },
     { key: "orders",   icon: "📋", label: "Замовлення" },
     { key: "cart",     icon: "🛒", label: "Кошик", badge: cartCount > 0 ? cartCount : null },
   ];

@@ -1,5 +1,5 @@
 // mini_app/src/pages/CartPage.jsx
-// Сторінка кошика — список, редагування кількості, коментар, підтвердження.
+// Сторінка кошика — список, редагування кількості, промокод, коментар, підтвердження.
 
 import { useState } from "react";
 import { useCart } from "../hooks/useCart";
@@ -13,6 +13,27 @@ export default function CartPage({ onBack }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+
+  // Промокод
+  const [promoCode, setPromoCode] = useState("");
+  const [promoResult, setPromoResult] = useState(null);
+  const [promoChecking, setPromoChecking] = useState(false);
+
+  const finalTotal = promoResult?.valid ? promoResult.discounted_total : total;
+
+  const handlePromoCheck = async () => {
+    if (!promoCode.trim()) return;
+    setPromoChecking(true);
+    setPromoResult(null);
+    try {
+      const res = await api.validatePromo(promoCode.trim(), total, tg?.initData || "");
+      setPromoResult(res);
+    } catch (e) {
+      setPromoResult({ valid: false, message: e.message });
+    } finally {
+      setPromoChecking(false);
+    }
+  };
 
   // ── Порожній кошик ─────────────────────────────────────────────────────────
   if (count === 0 && !success) {
@@ -59,6 +80,7 @@ export default function CartPage({ onBack }) {
             quantity: i.quantity,
           })),
           comment: comment.trim(),
+          promo_code: promoResult?.valid ? promoCode.trim() : undefined,
         },
         initData
       );
@@ -80,7 +102,6 @@ export default function CartPage({ onBack }) {
       <div style={styles.list}>
         {items.map(({ product, quantity }) => (
           <div key={product.id} style={styles.item}>
-            {/* Фото мініатюра */}
             <div style={styles.thumb}>
               {product.image_url ? (
                 <img src={product.image_url} alt="" style={styles.thumbImg} />
@@ -89,13 +110,11 @@ export default function CartPage({ onBack }) {
               )}
             </div>
 
-            {/* Назва + ціна */}
             <div style={styles.itemInfo}>
               <p style={styles.itemName}>{product.name}</p>
               <p style={styles.itemPrice}>{product.price.toFixed(2)} ₴</p>
             </div>
 
-            {/* Кількість */}
             <div style={styles.qtyControls}>
               <button
                 style={styles.qtyBtn}
@@ -124,7 +143,40 @@ export default function CartPage({ onBack }) {
       {/* Сума */}
       <div style={styles.totalRow}>
         <span style={styles.totalLabel}>Разом:</span>
-        <span style={styles.totalValue}>{total.toFixed(2)} ₴</span>
+        <div style={{ textAlign: "right" }}>
+          {promoResult?.valid && (
+            <div style={styles.oldTotal}>{total.toFixed(2)} ₴</div>
+          )}
+          <span style={styles.totalValue}>{finalTotal.toFixed(2)} ₴</span>
+        </div>
+      </div>
+
+      {/* Промокод */}
+      <div style={styles.promoBlock}>
+        <div style={styles.promoRow}>
+          <input
+            style={styles.promoInput}
+            placeholder="Промокод"
+            value={promoCode}
+            onChange={(e) => {
+              setPromoCode(e.target.value.toUpperCase());
+              setPromoResult(null);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handlePromoCheck()}
+          />
+          <button
+            style={styles.promoBtn}
+            onClick={handlePromoCheck}
+            disabled={promoChecking || !promoCode.trim()}
+          >
+            {promoChecking ? "..." : "Застосувати"}
+          </button>
+        </div>
+        {promoResult && (
+          <p style={promoResult.valid ? styles.promoSuccess : styles.promoError}>
+            {promoResult.message}
+          </p>
+        )}
       </div>
 
       {/* Коментар */}
@@ -141,15 +193,10 @@ export default function CartPage({ onBack }) {
       </div>
 
       {/* Помилка */}
-      {error && (
-        <div style={styles.errorBox}>⚠️ {error}</div>
-      )}
+      {error && <div style={styles.errorBox}>⚠️ {error}</div>}
 
       {/* Очистити кошик */}
-      <button
-        style={styles.clearBtn}
-        onClick={() => dispatch({ type: "CLEAR" })}
-      >
+      <button style={styles.clearBtn} onClick={() => dispatch({ type: "CLEAR" })}>
         🗑 Очистити кошик
       </button>
 
@@ -160,7 +207,7 @@ export default function CartPage({ onBack }) {
           onClick={handleSubmit}
           disabled={submitting}
         >
-          {submitting ? "Відправляємо..." : `Підтвердити замовлення · ${total.toFixed(2)} ₴`}
+          {submitting ? "Відправляємо..." : `Підтвердити замовлення · ${finalTotal.toFixed(2)} ₴`}
         </button>
       </div>
     </div>
@@ -173,12 +220,9 @@ const styles = {
 
   list: { display: "flex", flexDirection: "column", gap: 12 },
   item: {
-    display: "flex",
-    alignItems: "center",
-    background: "#fff",
-    borderRadius: 12,
-    padding: "10px 12px",
-    gap: 10,
+    display: "flex", alignItems: "center",
+    background: "#fff", borderRadius: 12,
+    padding: "10px 12px", gap: 10,
     boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
   },
   thumb: { width: 52, height: 52, flexShrink: 0 },
@@ -200,7 +244,23 @@ const styles = {
     boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
   },
   totalLabel: { fontSize: 15, color: "#555" },
+  oldTotal: { fontSize: 12, color: "#bbb", textDecoration: "line-through", textAlign: "right" },
   totalValue: { fontSize: 20, fontWeight: 800, color: "#2481cc" },
+
+  promoBlock: { marginBottom: 12 },
+  promoRow: { display: "flex", gap: 8 },
+  promoInput: {
+    flex: 1, padding: "10px 12px", fontSize: 14,
+    border: "1px solid #e0e0e0", borderRadius: 10,
+    outline: "none", letterSpacing: 1, fontFamily: "inherit",
+    background: "#fff",
+  },
+  promoBtn: {
+    padding: "10px 14px", borderRadius: 10, border: "1px solid #ddd",
+    background: "#f5f5f5", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
+  },
+  promoSuccess: { fontSize: 12, color: "#43a047", margin: "6px 0 0", paddingLeft: 4 },
+  promoError: { fontSize: 12, color: "#e53935", margin: "6px 0 0", paddingLeft: 4 },
 
   commentBlock: { marginBottom: 16 },
   commentLabel: { fontSize: 13, color: "#666", display: "block", marginBottom: 6 },

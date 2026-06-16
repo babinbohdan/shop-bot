@@ -58,4 +58,28 @@ export const api = {
     apiFetch("/orders/history", {
       headers: { "x-telegram-init-data": initData },
     }),
+
+  // Промокоди
+  validatePromo: (code, orderTotal, initData) =>
+    apiFetch("/promo/validate", {
+      method: "POST",
+      headers: { "x-telegram-init-data": initData },
+      body: JSON.stringify({ code, order_total: orderTotal }),
+    }),
+
+  // Вішліст
+  getWishlist: (initData) =>
+    apiFetch("/wishlist", { headers: { "x-telegram-init-data": initData } }),
+  getWishlistIds: (initData) =>
+    apiFetch("/wishlist/ids", { headers: { "x-telegram-init-data": initData } }),
+  addToWishlist: (productId, initData) =>
+    apiFetch(`/wishlist/${productId}`, {
+      method: "POST",
+      headers: { "x-telegram-init-data": initData },
+    }),
+  removeFromWishlist: (productId, initData) =>
+    apiFetch(`/wishlist/${productId}`, {
+      method: "DELETE",
+      headers: { "x-telegram-init-data": initData },
+    }),
 };

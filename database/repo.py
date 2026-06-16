@@ -4,13 +4,14 @@ database/repo.py — репозиторій: всі запити до БД в о
 """
 
 import logging
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from database.models import CartItem, Category, Order, OrderItem, Product, User
+from database.models import CartItem, Category, Order, OrderItem, Product, PromoCode, User, WishlistItem
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +198,126 @@ async def create_order(
         )
     return order
 
+
+# ════════════════════════════════════════════════════════════════════════
+#  ABANDONED CART REMINDER
+# ════════════════════════════════════════════════════════════════════════
+
+async def get_users_with_abandoned_carts(session: AsyncSession) -> list[tuple[User, list[CartItem]]]:
+    """
+    Повертає користувачів, у яких є товари в кошику ≥ 2 год і яким ще
+    не надсилали нагадування (або надсилали > 24 год тому).
+    """
+    from datetime import timedelta, timezone
+    from sqlalchemy import and_, or_
+
+    threshold = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)
+    remind_cooldown = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=24)
+
+    result = await session.execute(
+        select(User)
+        .join(CartItem, CartItem.user_id == User.id)
+        .where(
+            CartItem.added_at <= threshold,
+            or_(CartItem.notified_at.is_(None), CartItem.notified_at <= remind_cooldown),
+            User.is_blocked == False,
+        )
+        .options(selectinload(User.cart_items).selectinload(CartItem.product))
+        .distinct()
+    )
+    users = result.scalars().all()
+    return [(u, u.cart_items) for u in users if u.cart_items]
+
+
+async def mark_cart_notified(session: AsyncSession, user_id: int) -> None:
+    """Ставить notified_at = зараз для всіх позицій кошика користувача."""
+    from datetime import timezone
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    await session.execute(
+        update(CartItem).where(CartItem.user_id == user_id).values(notified_at=now)
+    )
+
+
+# ════════════════════════════════════════════════════════════════════════
+#  PROMO CODES
+# ════════════════════════════════════════════════════════════════════════
+
+async def get_promo_code(session: AsyncSession, code: str) -> PromoCode | None:
+    from datetime import timezone
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    result = await session.execute(
+        select(PromoCode).where(
+            PromoCode.code == code.upper().strip(),
+            PromoCode.is_active == True,
+        )
+    )
+    promo = result.scalar_one_or_none()
+    if promo is None:
+        return None
+    # Перевіряємо термін дії
+    if promo.expires_at and promo.expires_at < now:
+        return None
+    # Перевіряємо ліміт використань
+    if promo.max_uses is not None and promo.used_count >= promo.max_uses:
+        return None
+    return promo
+
+
+async def use_promo_code(session: AsyncSession, code_id: int) -> None:
+    await session.execute(
+        update(PromoCode)
+        .where(PromoCode.id == code_id)
+        .values(used_count=PromoCode.used_count + 1)
+    )
+
+
+# ════════════════════════════════════════════════════════════════════════
+#  WISHLIST
+# ════════════════════════════════════════════════════════════════════════
+
+async def get_wishlist(session: AsyncSession, user_id: int) -> list[WishlistItem]:
+    result = await session.execute(
+        select(WishlistItem)
+        .where(WishlistItem.user_id == user_id)
+        .options(selectinload(WishlistItem.product))
+        .order_by(WishlistItem.added_at.desc())
+    )
+    return list(result.scalars())
+
+
+async def get_wishlist_product_ids(session: AsyncSession, user_id: int) -> set[int]:
+    result = await session.execute(
+        select(WishlistItem.product_id).where(WishlistItem.user_id == user_id)
+    )
+    return set(result.scalars())
+
+
+async def add_to_wishlist(session: AsyncSession, user_id: int, product_id: int) -> bool:
+    """Повертає True якщо додано, False якщо вже є."""
+    result = await session.execute(
+        select(WishlistItem).where(
+            WishlistItem.user_id == user_id,
+            WishlistItem.product_id == product_id,
+        )
+    )
+    if result.scalar_one_or_none():
+        return False
+    session.add(WishlistItem(user_id=user_id, product_id=product_id))
+    return True
+
+
+async def remove_from_wishlist(session: AsyncSession, user_id: int, product_id: int) -> None:
+    await session.execute(
+        delete(WishlistItem).where(
+            WishlistItem.user_id == user_id,
+            WishlistItem.product_id == product_id,
+        )
+    )
+
+
+# ════════════════════════════════════════════════════════════════════════
+#  ORDERS (продовження)
+# ════════════════════════════════════════════════════════════════════════
 
 async def get_order_with_items(session: AsyncSession, order_id: int) -> Order | None:
     result = await session.execute(

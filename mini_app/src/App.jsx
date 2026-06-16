@@ -1,6 +1,6 @@
 // mini_app/src/App.jsx — головний компонент з нижньою навігацією
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CatalogPage from "./pages/CatalogPage";
 import CategoryPage from "./pages/CategoryPage";
 import ProductPage from "./pages/ProductPage";
@@ -17,6 +17,7 @@ const BACK_PAGES = new Set(["category", "product", "cart", "search", "orders", "
 
 function AppInner() {
   const [page, setPage] = useState("catalog");
+  const [animKey, setAnimKey] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { count } = useCart();
@@ -52,6 +53,7 @@ function AppInner() {
     if (data.category) setSelectedCategory(data.category);
     if (data.product) setSelectedProduct(data.product);
     setPage(to);
+    setAnimKey((k) => k + 1);
   };
 
   // Нижня навігація — не показуємо на сторінці товару (там фіксована кнопка)
@@ -59,6 +61,14 @@ function AppInner() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f5f5", paddingBottom: showNavbar ? 76 : 0 }}>
+      <style>{`
+        @keyframes pageIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .page-anim { animation: pageIn 0.22s ease; }
+      `}</style>
+      <div key={animKey} className="page-anim">
       {page === "catalog" && (
         <CatalogPage onSelectCategory={(cat) => navigate("category", { category: cat })} />
       )}
@@ -87,10 +97,11 @@ function AppInner() {
       {page === "wishlist" && (
         <WishlistPage onSelectProduct={(p) => navigate("product", { product: p })} />
       )}
+      </div>
 
       {/* Нижня навігаційна панель */}
       {showNavbar && (
-        <BottomNav current={page} cartCount={count} onNavigate={setPage} />
+        <BottomNav current={page} cartCount={count} onNavigate={(to) => navigate(to)} />
       )}
     </div>
   );

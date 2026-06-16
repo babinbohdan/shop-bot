@@ -46,7 +46,7 @@ class WishlistProductOut(BaseModel):
 # ─── Auth helper ─────────────────────────────────────────────────────────────
 
 def _get_tg_user(init_data: str) -> dict:
-    parsed = dict(urllib.parse.parse_qsl(init_data, strict_parsing=True))
+    parsed = dict(urllib.parse.parse_qsl(init_data, strict_parsing=False))
     received_hash = parsed.pop("hash", None)
     if not received_hash:
         raise HTTPException(status_code=401, detail="Missing hash")

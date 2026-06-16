@@ -17,6 +17,7 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
   const [similar, setSimilar] = useState([]);
   const [wished, setWished] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
+  const [wishError, setWishError] = useState(null);
   const { dispatch } = useCart();
 
   useEffect(() => {
@@ -48,18 +49,26 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
 
   const handleWishlist = async () => {
     const initData = tg?.initData || "";
-    if (!initData) return;
+    if (!initData) {
+      setWishError("Відкрийте через Telegram");
+      setTimeout(() => setWishError(null), 3000);
+      return;
+    }
     setWishLoading(true);
+    setWishError(null);
     try {
       if (wished) {
         await api.removeFromWishlist(product.id, initData);
         setWished(false);
+        tg?.HapticFeedback?.notificationOccurred("success");
       } else {
         await api.addToWishlist(product.id, initData);
         setWished(true);
+        tg?.HapticFeedback?.notificationOccurred("success");
       }
-    } catch (_) {
-      // мовчки ігноруємо
+    } catch (err) {
+      setWishError(err.message || "Помилка. Спробуйте ще раз");
+      setTimeout(() => setWishError(null), 3000);
     } finally {
       setWishLoading(false);
     }
@@ -87,13 +96,16 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
 
         {/* Кнопка вішліст */}
         <button
-          style={{ ...styles.wishBtn, ...(wished ? styles.wishBtnActive : {}) }}
+          style={{ ...styles.wishBtn, ...(wished ? styles.wishBtnActive : {}), opacity: wishLoading ? 0.6 : 1 }}
           onClick={handleWishlist}
           disabled={wishLoading}
           aria-label={wished ? "Видалити з бажань" : "Додати до бажань"}
         >
-          {wished ? "❤️" : "🤍"}
+          {wishLoading ? "⏳" : wished ? "❤️" : "🤍"}
         </button>
+        {wishError && (
+          <div style={styles.wishToast}>{wishError}</div>
+        )}
       </div>
 
       {/* Інфо */}
@@ -186,6 +198,12 @@ const styles = {
     boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
   },
   wishBtnActive: { background: "#ffebee" },
+  wishToast: {
+    position: "absolute", bottom: 8, left: 8, right: 8,
+    background: "rgba(229,57,53,0.92)", color: "#fff",
+    fontSize: 12, fontWeight: 500, padding: "6px 10px",
+    borderRadius: 8, textAlign: "center", zIndex: 10,
+  },
 
   info: { padding: "16px 16px 0" },
   vendor: { fontSize: 12, color: "#888", margin: "0 0 4px" },

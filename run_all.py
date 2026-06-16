@@ -33,8 +33,13 @@ async def run_bot():
 
 async def start():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    from database.db import init_db
+    from database.db import init_db, get_session
+    from database.repo import ensure_welcome_promo
+    from config import settings
     await init_db()
+    # Переконуємось що вітальний промокод існує в БД
+    async with get_session() as session:
+        await ensure_welcome_promo(session, settings.WELCOME_PROMO_CODE, settings.WELCOME_PROMO_DISCOUNT)
     await asyncio.gather(run_api(), run_bot())
 
 

@@ -2,11 +2,11 @@
 handlers/registration.py — покрокова реєстрація нового користувача (FSM).
 
 Кроки:
-  1. /start → просимо поділитися контактом (кнопка request_contact)
+  1. /start → вітальний банер + опис магазину → просимо поділитися контактом
   2. Отримали контакт → зберігаємо телефон, питаємо ПІБ
   3. Ввели ПІБ → питаємо місто
   4. Ввели місто → питаємо спосіб доставки (inline-кнопки)
-  5. Обрали доставку → реєстрація завершена, показуємо меню
+  5. Обрали доставку → реєстрація завершена, надсилаємо welcome-промокод + меню
 """
 
 import logging
@@ -21,6 +21,7 @@ from aiogram.types import (
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from config import settings
 from database.db import get_session
 from database.repo import create_user, get_user_by_tg_id, update_user_registration
 from keyboards.main_menu import main_menu_keyboard
@@ -38,6 +39,27 @@ class RegistrationStates(StatesGroup):
     waiting_delivery = State()
 
 
+# ─── Вітальний текст для нових ───────────────────────────────────────────────
+
+WELCOME_NEW = (
+    "🧸 <b>Вітаємо у нашому магазині іграшок!</b>\n\n"
+    "Ми допомагаємо дітям рости, грати і розвиватися 🌟\n\n"
+    "У нас ви знайдете:\n"
+    "🪆 Розвивальні та навчальні іграшки\n"
+    "🎨 Набори для творчості та малювання\n"
+    "🚗 Машинки, конструктори, роботи\n"
+    "🎭 Рольові ігри та м'які іграшки\n"
+    "🎁 Подарункові набори для будь-якого віку\n\n"
+    "Щоб розпочати — пройдіть коротку реєстрацію 👇"
+)
+
+WELCOME_BACK = (
+    "👋 З поверненням, <b>{name}</b>!\n\n"
+    "🛍 Готові до нових покупок?\n"
+    "Нові іграшки вже чекають на вас ✨"
+)
+
+
 # ─── /start ──────────────────────────────────────────────────────────────────
 
 @router.message(CommandStart())
@@ -46,22 +68,29 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
         user = await get_user_by_tg_id(session, message.from_user.id)
 
     if user and user.is_registered:
-        # Уже зареєстрований — показуємо головне меню
+        # Постійний користувач — гарне привітання + меню
         await message.answer(
-            f"👋 З поверненням, <b>{user.full_name}</b>!\nОберіть дію з меню нижче:",
+            WELCOME_BACK.format(name=user.full_name.split()[0] if user.full_name else "друже"),
             reply_markup=main_menu_keyboard(),
         )
         await state.clear()
         return
 
-    # Новий користувач — починаємо реєстрацію
+    # Новий користувач — вітальний банер + вступ
+    if settings.WELCOME_BANNER_URL:
+        await message.answer_photo(
+            photo=settings.WELCOME_BANNER_URL,
+            caption=WELCOME_NEW,
+        )
+    else:
+        await message.answer(WELCOME_NEW)
+
+    # Просимо поділитися контактом
     contact_btn = KeyboardButton(text="📱 Поділитися номером телефону", request_contact=True)
     kb = ReplyKeyboardMarkup(keyboard=[[contact_btn]], resize_keyboard=True, one_time_keyboard=True)
 
     await message.answer(
-        "👋 Вітаємо в магазині!\n\n"
-        "Для початку роботи необхідно пройти швидку реєстрацію.\n"
-        "Натисніть кнопку нижче, щоб поділитися номером телефону:",
+        "⬇️ Натисніть кнопку нижче, щоб передати номер телефону:",
         reply_markup=kb,
     )
     await state.set_state(RegistrationStates.waiting_contact)
@@ -72,7 +101,6 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
 @router.message(RegistrationStates.waiting_contact, F.contact)
 async def handle_contact(message: Message, state: FSMContext) -> None:
     phone = message.contact.phone_number
-    # Нормалізуємо номер (прибираємо зайві символи)
     phone = "+" + phone.lstrip("+")
 
     async with get_session() as session:
@@ -88,7 +116,6 @@ async def handle_contact(message: Message, state: FSMContext) -> None:
 
 @router.message(RegistrationStates.waiting_contact)
 async def handle_contact_wrong(message: Message) -> None:
-    """Якщо користувач написав текст замість натискання кнопки."""
     await message.answer("Будь ласка, скористайтесь кнопкою для відправки контакту ⬆️")
 
 
@@ -113,7 +140,6 @@ async def handle_city(message: Message, state: FSMContext) -> None:
     city = message.text.strip()
     await state.update_data(city=city)
 
-    # Inline-кнопки для вибору доставки
     builder = InlineKeyboardBuilder()
     builder.button(text="🚚 Адресна доставка", callback_data="delivery:delivery")
     builder.button(text="🏪 Самовивіз", callback_data="delivery:pickup")
@@ -130,7 +156,7 @@ async def handle_city(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(RegistrationStates.waiting_delivery, F.data.startswith("delivery:"))
 async def handle_delivery(callback: CallbackQuery, state: FSMContext) -> None:
-    delivery_type = callback.data.split(":")[1]  # "delivery" або "pickup"
+    delivery_type = callback.data.split(":")[1]
     delivery_label = "🚚 Адресна доставка" if delivery_type == "delivery" else "🏪 Самовивіз"
 
     data = await state.get_data()
@@ -145,6 +171,8 @@ async def handle_delivery(callback: CallbackQuery, state: FSMContext) -> None:
         )
 
     await state.clear()
+
+    # Підтвердження реєстрації
     await callback.message.edit_text(
         f"✅ <b>Реєстрацію завершено!</b>\n\n"
         f"👤 ПІБ: {data['full_name']}\n"
@@ -152,6 +180,18 @@ async def handle_delivery(callback: CallbackQuery, state: FSMContext) -> None:
         f"📦 Доставка: {delivery_label}\n\n"
         f"Ласкаво просимо до магазину! 🛍"
     )
+
+    # Вітальний подарунок — промокод
+    promo = settings.WELCOME_PROMO_CODE
+    discount = settings.WELCOME_PROMO_DISCOUNT
+    await callback.message.answer(
+        f"🎁 <b>Подарунок для вас!</b>\n\n"
+        f"Як новому клієнту — дарую промокод на знижку <b>{discount}%</b> на перше замовлення:\n\n"
+        f"<code>{promo}</code>\n\n"
+        f"Скопіюйте його та введіть у кошику при оформленні! 🛒",
+    )
+
+    # Головне меню
     await callback.message.answer(
         "Оберіть дію з меню нижче:",
         reply_markup=main_menu_keyboard(),

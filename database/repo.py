@@ -271,6 +271,24 @@ async def use_promo_code(session: AsyncSession, code_id: int) -> None:
     )
 
 
+async def ensure_welcome_promo(session: AsyncSession, code: str, discount_pct: int) -> None:
+    """Створює вітальний промокод якщо він ще не існує."""
+    result = await session.execute(select(PromoCode).where(PromoCode.code == code.upper()))
+    if result.scalar_one_or_none() is None:
+        promo = PromoCode(
+            code=code.upper(),
+            discount_type="percent",
+            discount_value=discount_pct,
+            max_uses=None,   # необмежено
+            used_count=0,
+            min_order_amount=None,
+            is_active=True,
+            expires_at=None,
+        )
+        session.add(promo)
+        logger.info("Created welcome promo code: %s (%d%%)", code.upper(), discount_pct)
+
+
 # ════════════════════════════════════════════════════════════════════════
 #  WISHLIST
 # ════════════════════════════════════════════════════════════════════════

@@ -17,15 +17,20 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
   const [similar, setSimilar] = useState([]);
   const [wished, setWished] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
-  const [wishError, setWishError] = useState(null);
+  const [wishToast, setWishToast] = useState(null); // { msg, type: "ok"|"err"|"info" }
   const { dispatch } = useCart();
+
+  const showWishToast = (msg, type = "info", ms = 3500) => {
+    setWishToast({ msg, type });
+    setTimeout(() => setWishToast(null), ms);
+  };
 
   useEffect(() => {
     if (!initialProduct?.id) return;
     setLoading(true);
     setAdded(false);
 
-    const initData = tg?.initData || "";
+    const initData = window.Telegram?.WebApp?.initData || "";
 
     Promise.all([
       api.getProduct(initialProduct.id),
@@ -35,7 +40,7 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
       .then(([prod, sim, wishIds]) => {
         setProduct(prod);
         setSimilar(sim);
-        setWished(wishIds.includes(prod.id));
+        setWished(Array.isArray(wishIds) && wishIds.map(Number).includes(Number(prod.id)));
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -48,27 +53,27 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
   };
 
   const handleWishlist = async () => {
-    const initData = tg?.initData || "";
+    const initData = window.Telegram?.WebApp?.initData || "";
     if (!initData) {
-      setWishError("Відкрийте через Telegram");
-      setTimeout(() => setWishError(null), 3000);
+      showWishToast("Відкрийте через Telegram", "err", 5000);
       return;
     }
     setWishLoading(true);
-    setWishError(null);
     try {
       if (wished) {
         await api.removeFromWishlist(product.id, initData);
         setWished(false);
-        tg?.HapticFeedback?.notificationOccurred("success");
+        showWishToast("Видалено з бажань", "info", 2000);
+        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred("success");
       } else {
         await api.addToWishlist(product.id, initData);
         setWished(true);
-        tg?.HapticFeedback?.notificationOccurred("success");
+        showWishToast("❤️ Додано до бажань!", "ok", 2500);
+        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred("success");
       }
     } catch (err) {
-      setWishError(err.message || "Помилка. Спробуйте ще раз");
-      setTimeout(() => setWishError(null), 3000);
+      const msg = err.message || "Помилка";
+      showWishToast(msg, "err", 8000);
     } finally {
       setWishLoading(false);
     }
@@ -85,6 +90,17 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
 
   return (
     <div style={styles.page}>
+      {/* Тост wishlist — фіксований над навбаром */}
+      {wishToast && (
+        <div style={{
+          ...styles.wishToast,
+          background: wishToast.type === "ok" ? "#43a047"
+                    : wishToast.type === "err" ? "#d32f2f"
+                    : "#555",
+        }}>
+          {wishToast.msg}
+        </div>
+      )}
       {/* Фото */}
       <div style={styles.imageWrap}>
         {product.image_url ? (
@@ -103,9 +119,6 @@ export default function ProductPage({ product: initialProduct, onCart, onSelectP
         >
           {wishLoading ? "⏳" : wished ? "❤️" : "🤍"}
         </button>
-        {wishError && (
-          <div style={styles.wishToast}>{wishError}</div>
-        )}
       </div>
 
       {/* Інфо */}
@@ -199,10 +212,11 @@ const styles = {
   },
   wishBtnActive: { background: "#ffebee" },
   wishToast: {
-    position: "absolute", bottom: 8, left: 8, right: 8,
-    background: "rgba(229,57,53,0.92)", color: "#fff",
-    fontSize: 12, fontWeight: 500, padding: "6px 10px",
-    borderRadius: 8, textAlign: "center", zIndex: 10,
+    position: "fixed", bottom: 76, left: 16, right: 16,
+    color: "#fff", fontSize: 14, fontWeight: 600,
+    padding: "13px 16px", borderRadius: 12,
+    textAlign: "center", zIndex: 9999,
+    boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
   },
 
   info: { padding: "16px 16px 0" },

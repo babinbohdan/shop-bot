@@ -63,10 +63,10 @@ function AppInner() {
     <div style={{ minHeight: "100vh", background: "#f5f5f5", paddingBottom: showNavbar ? 76 : 0 }}>
       <style>{`
         @keyframes pageIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from { opacity: 0; transform: translateY(12px) scale(0.985); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .page-anim { animation: pageIn 0.22s ease; }
+        .page-anim { animation: pageIn 0.32s cubic-bezier(0.4, 0, 0.2, 1) both; }
       `}</style>
       <div key={animKey} className="page-anim">
       {page === "catalog" && (

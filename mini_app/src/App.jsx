@@ -58,7 +58,7 @@ function AppInner() {
   const showNavbar = page !== "product";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f5f5", paddingBottom: showNavbar ? 64 : 0 }}>
+    <div style={{ minHeight: "100vh", background: "#f5f5f5", paddingBottom: showNavbar ? 76 : 0 }}>
       {page === "catalog" && (
         <CatalogPage onSelectCategory={(cat) => navigate("category", { category: cat })} />
       )}
@@ -107,24 +107,28 @@ function BottomNav({ current, cartCount, onNavigate }) {
 
   return (
     <nav style={navStyles.bar}>
-      {items.map(({ key, icon, label, badge }) => {
-        const active = current === key;
-        return (
-          <button
-            key={key}
-            style={{ ...navStyles.item, ...(active ? navStyles.active : {}) }}
-            onClick={() => onNavigate(key)}
-          >
-            <span style={navStyles.iconWrap}>
-              <span style={navStyles.icon}>{icon}</span>
-              {badge != null && (
-                <span style={navStyles.badge}>{badge > 99 ? "99+" : badge}</span>
-              )}
-            </span>
-            <span style={navStyles.label}>{label}</span>
-          </button>
-        );
-      })}
+      <div style={navStyles.inner}>
+        {items.map(({ key, icon, label, badge }) => {
+          const active = current === key;
+          return (
+            <button
+              key={key}
+              style={{ ...navStyles.item, ...(active ? navStyles.itemActive : {}) }}
+              onClick={() => onNavigate(key)}
+            >
+              <span style={navStyles.iconWrap}>
+                <span style={navStyles.icon}>{icon}</span>
+                {badge != null && (
+                  <span style={navStyles.badge}>{badge > 99 ? "99+" : badge}</span>
+                )}
+              </span>
+              <span style={{ ...navStyles.label, ...(active ? navStyles.labelActive : {}) }}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }
@@ -133,11 +137,17 @@ const navStyles = {
   bar: {
     position: "fixed",
     bottom: 0, left: 0, right: 0,
-    height: 60,
     background: "#fff",
     boxShadow: "0 -1px 8px rgba(0,0,0,0.10)",
-    display: "flex",
     zIndex: 200,
+    padding: "6px 6px 8px",
+  },
+  inner: {
+    display: "flex",
+    background: "#f0f4ff",
+    borderRadius: 18,
+    padding: 4,
+    gap: 3,
   },
   item: {
     flex: 1,
@@ -148,12 +158,16 @@ const navStyles = {
     border: "none",
     background: "transparent",
     cursor: "pointer",
-    padding: "4px 0",
+    padding: "7px 4px",
+    borderRadius: 14,
     gap: 2,
+    transition: "background 0.15s",
   },
-  active: { color: "#2481cc" },
+  itemActive: {
+    background: "#2481cc",
+  },
   iconWrap: { position: "relative", display: "inline-flex" },
-  icon: { fontSize: 20 },
+  icon: { fontSize: 18 },
   badge: {
     position: "absolute",
     top: -6, right: -10,
@@ -169,7 +183,8 @@ const navStyles = {
     justifyContent: "center",
     padding: "0 3px",
   },
-  label: { fontSize: 10, fontWeight: 500, color: "inherit" },
+  label: { fontSize: 10, fontWeight: 500, color: "#888" },
+  labelActive: { color: "#fff" },
 };
 
 export default function App() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { getProducts, searchProducts, getCategories } from "@/lib/api";
@@ -15,7 +15,7 @@ const SORT_OPTIONS = [
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
-export default function CatalogPage() {
+function CatalogContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -201,5 +201,19 @@ export default function CatalogPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-gray-100 rounded-2xl h-64 animate-pulse" />
+        ))}
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   );
 }

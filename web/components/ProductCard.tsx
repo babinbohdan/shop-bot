@@ -25,13 +25,13 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/catalog/${product.id}`} className="block group">
       <div className="card-shadow overflow-hidden h-full flex flex-col">
         {discount > 0 && (
-          <span className="absolute top-0 left-0 z-10 bg-accent text-white text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">
+          <span className="absolute top-0 left-0 z-10 bg-accent text-ink text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">
             -{discount}%
           </span>
         )}
         {!product.in_stock && (
-          <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center border-2 border-ink">
-            <span className="text-xs font-black text-ink uppercase tracking-wider border-2 border-ink bg-white px-3 py-1">Немає</span>
+          <div className="absolute inset-0 bg-surface/90 z-10 flex items-center justify-center border-2 border-border">
+            <span className="text-xs font-black text-ink uppercase tracking-wider border-2 border-border bg-panel px-3 py-1">Немає</span>
           </div>
         )}
 
@@ -45,7 +45,7 @@ export default function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <div className="p-3 flex flex-col flex-1 border-t-2 border-ink">
+        <div className="p-3 flex flex-col flex-1 border-t-2 border-border">
           <p className="text-sm text-ink line-clamp-2 mb-2 flex-1 font-bold uppercase leading-tight">{product.name}</p>
           <div className="flex items-end gap-2 mb-3">
             <span className="text-base font-black text-ink">{product.price} ₴</span>

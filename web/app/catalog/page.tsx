@@ -64,13 +64,13 @@ function CatalogContent() {
     <div className="max-w-7xl mx-auto px-4 py-8 flex gap-6">
       {/* Sidebar */}
       <aside className="hidden md:block w-52 shrink-0">
-        <div className="bg-white border-2 border-ink p-3 sticky top-16 shadow-[4px_4px_0px_#111]">
-          <h3 className="text-xs font-black text-ink uppercase tracking-widest mb-3 border-b-2 border-ink pb-2">Категорії</h3>
+        <div className="bg-surface border-2 border-border p-3 sticky top-16 shadow-[4px_4px_0px_#4a4e8f]">
+          <h3 className="text-xs font-black text-ink uppercase tracking-widest mb-3 border-b-2 border-border pb-2">Категорії</h3>
           <ul className="space-y-0.5">
             <li>
               <button onClick={() => { setSelectedCat(undefined); updateUrl({ category_id: undefined }); }}
                 className={`w-full text-left px-2 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${
-                  !selectedCat ? "bg-ink text-primary" : "text-ink hover:bg-primary"
+                  !selectedCat ? "bg-primary text-surface" : "text-ink hover:bg-primary hover:text-surface"
                 }`}>
                 Всі товари
               </button>
@@ -79,7 +79,7 @@ function CatalogContent() {
               <li key={cat.id}>
                 <button onClick={() => { setSelectedCat(cat.id); updateUrl({ category_id: cat.id }); }}
                   className={`w-full text-left px-2 py-1.5 text-xs font-black uppercase tracking-wide transition-colors ${
-                    selectedCat === cat.id ? "bg-ink text-primary" : "text-ink hover:bg-primary"
+                    selectedCat === cat.id ? "bg-primary text-surface" : "text-ink hover:bg-primary hover:text-surface"
                   }`}>
                   {cat.name}
                   {cat.product_count > 0 && <span className="ml-1 opacity-50">({cat.product_count})</span>}
@@ -87,10 +87,10 @@ function CatalogContent() {
               </li>
             ))}
           </ul>
-          <div className="border-t-2 border-ink mt-3 pt-3">
+          <div className="border-t-2 border-border mt-3 pt-3">
             <label className="flex items-center gap-2 text-xs font-black text-ink uppercase cursor-pointer select-none">
               <input type="checkbox" checked={inStock} onChange={() => { const n = !inStock; setInStock(n); updateUrl({ in_stock: n }); }}
-                className="accent-ink w-4 h-4" />
+                className="accent-primary w-4 h-4" />
               В наявності
             </label>
           </div>
@@ -107,8 +107,8 @@ function CatalogContent() {
           <div className="flex gap-2 flex-wrap">
             {SORT_OPTIONS.map((opt) => (
               <button key={opt.value} onClick={() => { setSort(opt.value); updateUrl({ sort: opt.value }); }}
-                className={`px-3 py-1.5 text-xs font-black border-2 border-ink transition-colors uppercase tracking-wide ${
-                  sort === opt.value ? "bg-ink text-primary" : "bg-white text-ink hover:bg-primary"
+                className={`px-3 py-1.5 text-xs font-black border-2 border-border transition-colors uppercase tracking-wide ${
+                  sort === opt.value ? "bg-primary text-surface" : "bg-surface text-ink hover:bg-primary hover:text-surface"
                 }`}>
                 {opt.label}
               </button>
@@ -119,7 +119,7 @@ function CatalogContent() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-white border-2 border-ink h-64 animate-pulse shadow-[4px_4px_0px_#111]" />
+              <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#4a4e8f]" />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -143,7 +143,7 @@ export default function CatalogPage() {
     <Suspense fallback={
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-white border-2 border-ink h-64 animate-pulse shadow-[4px_4px_0px_#111]" />
+          <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#4a4e8f]" />
         ))}
       </div>
     }>

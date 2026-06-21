@@ -38,12 +38,12 @@ export default function ProductPage() {
 
   if (loading) return (
     <div className="max-w-5xl mx-auto px-4 py-10 animate-pulse">
-      <div className="h-3 bg-panel border-2 border-ink w-48 mb-8" />
+      <div className="h-3 bg-panel border-2 border-border w-48 mb-8" />
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-panel border-2 border-ink h-80" />
+        <div className="bg-panel border-2 border-border h-80" />
         <div className="space-y-4">
-          <div className="h-6 bg-panel border-2 border-ink w-3/4" />
-          <div className="h-4 bg-panel border-2 border-ink w-1/2" />
+          <div className="h-6 bg-panel border-2 border-border w-3/4" />
+          <div className="h-4 bg-panel border-2 border-border w-1/2" />
         </div>
       </div>
     </div>
@@ -77,9 +77,9 @@ export default function ProductPage() {
       </nav>
 
       <div className="grid md:grid-cols-2 gap-8 mb-14">
-        <div className="relative h-72 md:h-96 bg-panel border-2 border-ink shadow-[6px_6px_0px_#111] overflow-hidden">
+        <div className="relative h-72 md:h-96 bg-panel border-2 border-border shadow-[6px_6px_0px_#4a4e8f] overflow-hidden">
           {discount > 0 && (
-            <span className="absolute top-0 left-0 z-10 bg-accent text-white text-xs font-black px-3 py-1 uppercase tracking-wider">
+            <span className="absolute top-0 left-0 z-10 bg-accent text-ink text-xs font-black px-3 py-1 uppercase tracking-wider">
               -{discount}%
             </span>
           )}
@@ -101,11 +101,11 @@ export default function ProductPage() {
           </div>
           <div className="mb-6">
             {product.in_stock ? (
-              <span className="inline-block bg-primary border-2 border-ink text-ink text-xs font-black px-3 py-1 uppercase tracking-wider shadow-[2px_2px_0px_#111]">
+              <span className="inline-block bg-primary border-2 border-border text-surface text-xs font-black px-3 py-1 uppercase tracking-wider shadow-[2px_2px_0px_#4a4e8f]">
                 ✓ В наявності
               </span>
             ) : (
-              <span className="inline-block bg-white border-2 border-ink text-muted text-xs font-black px-3 py-1 uppercase tracking-wider">
+              <span className="inline-block bg-surface border-2 border-border text-muted text-xs font-black px-3 py-1 uppercase tracking-wider">
                 Немає в наявності
               </span>
             )}
@@ -122,7 +122,7 @@ export default function ProductPage() {
             )}
           </div>
           {product.description && (
-            <div className="mt-6 pt-6 border-t-2 border-ink">
+            <div className="mt-6 pt-6 border-t-2 border-border">
               <h3 className="text-xs font-black text-ink uppercase tracking-widest mb-3">Опис</h3>
               <p className="text-sm text-muted font-medium leading-relaxed">{product.description}</p>
             </div>

@@ -16,6 +16,10 @@ logs/*.log
 
 # Node (npm install виконується локально)
 mini_app/node_modules/
+web/node_modules/
+web/.next/
+web_install_log.txt
+web/next.config.ts
 
 # OS
 .DS_Store

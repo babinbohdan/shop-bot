@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blue: #2481cc;
+  --red: #e53935;
+  --green: #43a047;
+  --font-nunito: "Nunito", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Page fade-in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.35s ease both;
+}

@@ -11,7 +11,7 @@ if errorlevel 1 (
 echo === Committing and pushing to GitHub ===
 cd /d C:\shop_bot
 git add -A
-git commit -m "Feature: search, filters, sort, order history, similar products, cart badge"
+git commit -m "Add Next.js web storefront (web/)"
 git push
 
 echo.

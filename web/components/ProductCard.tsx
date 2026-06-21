@@ -25,13 +25,13 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/catalog/${product.id}`} className="block group">
       <div className="card-shadow overflow-hidden h-full flex flex-col">
         {discount > 0 && (
-          <span className="absolute top-0 left-0 z-10 bg-accent text-ink text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">
+          <span className="absolute top-0 left-0 z-10 bg-danger text-surface text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">
             -{discount}%
           </span>
         )}
         {!product.in_stock && (
-          <div className="absolute inset-0 bg-surface/90 z-10 flex items-center justify-center border-2 border-border">
-            <span className="text-xs font-black text-ink uppercase tracking-wider border-2 border-border bg-panel px-3 py-1">Немає</span>
+          <div className="absolute inset-0 bg-surface/80 z-10 flex items-center justify-center border-2 border-border">
+            <span className="text-xs font-black text-ink uppercase tracking-wider border-2 border-border bg-surface px-3 py-1">Немає</span>
           </div>
         )}
 

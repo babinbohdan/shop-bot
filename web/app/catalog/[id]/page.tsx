@@ -77,9 +77,9 @@ export default function ProductPage() {
       </nav>
 
       <div className="grid md:grid-cols-2 gap-8 mb-14">
-        <div className="relative h-72 md:h-96 bg-panel border-2 border-border shadow-[6px_6px_0px_#4a4e8f] overflow-hidden">
+        <div className="relative h-72 md:h-96 bg-panel border-2 border-border shadow-[6px_6px_0px_#7d8471] overflow-hidden">
           {discount > 0 && (
-            <span className="absolute top-0 left-0 z-10 bg-accent text-ink text-xs font-black px-3 py-1 uppercase tracking-wider">
+            <span className="absolute top-0 left-0 z-10 bg-danger text-surface text-xs font-black px-3 py-1 uppercase tracking-wider">
               -{discount}%
             </span>
           )}
@@ -101,7 +101,7 @@ export default function ProductPage() {
           </div>
           <div className="mb-6">
             {product.in_stock ? (
-              <span className="inline-block bg-primary border-2 border-border text-surface text-xs font-black px-3 py-1 uppercase tracking-wider shadow-[2px_2px_0px_#4a4e8f]">
+              <span className="inline-block bg-primary border-2 border-border text-surface text-xs font-black px-3 py-1 uppercase tracking-wider shadow-[2px_2px_0px_#a4ac86]">
                 ✓ В наявності
               </span>
             ) : (
@@ -116,7 +116,7 @@ export default function ProductPage() {
               {added ? "✓ ДОДАНО" : "🛒 В КОШИК"}
             </button>
             {added && (
-              <Link href="/cart" className="block text-xs font-black text-ink uppercase hover:underline">
+              <Link href="/cart" className="block text-xs font-black text-primary uppercase hover:underline">
                 → Перейти до кошика
               </Link>
             )}

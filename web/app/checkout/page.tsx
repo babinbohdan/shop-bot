@@ -43,7 +43,7 @@ function CheckoutForm() {
 
   if (success) return (
     <div className="max-w-lg mx-auto px-4 py-24 text-center fade-up">
-      <div className="w-20 h-20 bg-primary border-2 border-border flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#4a4e8f]">
+      <div className="w-20 h-20 bg-accent border-2 border-border flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#a4ac86]">
         <span className="text-4xl">🎉</span>
       </div>
       <h1 className="text-3xl font-black mb-2 text-ink uppercase">Замовлення оформлено!</h1>
@@ -66,7 +66,7 @@ function CheckoutForm() {
       <div className="flex flex-col lg:flex-row gap-6">
         <form onSubmit={handleSubmit} className="flex-1 space-y-4">
 
-          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#4a4e8f]">
+          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#a4ac86]">
             <h2 className="text-xs font-black text-ink uppercase tracking-widest mb-4 border-b-2 border-border pb-2">Контактні дані</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
@@ -87,14 +87,14 @@ function CheckoutForm() {
             </div>
           </div>
 
-          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#4a4e8f]">
+          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#a4ac86]">
             <h2 className="text-xs font-black text-ink uppercase tracking-widest mb-4 border-b-2 border-border pb-2">Доставка</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {DELIVERY_OPTIONS.map((opt) => (
                 <button key={opt.value} type="button" onClick={() => set("delivery_type", opt.value)}
                   className={`py-3 px-2 border-2 text-xs font-black uppercase tracking-wide transition-colors text-center ${
                     form.delivery_type === opt.value
-                      ? "border-primary bg-primary text-surface shadow-[2px_2px_0px_#4a4e8f]"
+                      ? "border-primary bg-primary text-surface shadow-[2px_2px_0px_#a4ac86]"
                       : "border-border bg-surface text-ink hover:bg-primary hover:text-surface"
                   }`}>
                   <div className="text-xl mb-1">{opt.icon}</div>
@@ -111,7 +111,7 @@ function CheckoutForm() {
             )}
           </div>
 
-          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#4a4e8f]">
+          <div className="bg-surface border-2 border-border p-5 shadow-[4px_4px_0px_#a4ac86]">
             <h2 className="text-xs font-black text-ink uppercase tracking-widest mb-3 border-b-2 border-border pb-2">Промокод</h2>
             <input value={form.promo_code} onChange={(e) => set("promo_code", e.target.value.toUpperCase())}
               placeholder="WELCOME10" className="input-natural px-3 py-2 text-sm font-black uppercase max-w-xs w-full" />
@@ -128,7 +128,7 @@ function CheckoutForm() {
         </form>
 
         <div className="lg:w-64 shrink-0">
-          <div className="bg-surface border-2 border-border p-5 lg:sticky lg:top-16 shadow-[4px_4px_0px_#4a4e8f]">
+          <div className="bg-surface border-2 border-border p-5 lg:sticky lg:top-16 shadow-[4px_4px_0px_#a4ac86]">
             <h2 className="text-xs font-black text-ink uppercase tracking-widest mb-4 border-b-2 border-border pb-2">Замовлення</h2>
             <div className="space-y-2 mb-4">
               {items.map(({ product, quantity }) => (

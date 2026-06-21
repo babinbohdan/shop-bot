@@ -64,7 +64,7 @@ function CatalogContent() {
     <div className="max-w-7xl mx-auto px-4 py-8 flex gap-6">
       {/* Sidebar */}
       <aside className="hidden md:block w-52 shrink-0">
-        <div className="bg-surface border-2 border-border p-3 sticky top-16 shadow-[4px_4px_0px_#4a4e8f]">
+        <div className="bg-surface border-2 border-border p-3 sticky top-16 shadow-[4px_4px_0px_#a4ac86]">
           <h3 className="text-xs font-black text-ink uppercase tracking-widest mb-3 border-b-2 border-border pb-2">Категорії</h3>
           <ul className="space-y-0.5">
             <li>
@@ -119,7 +119,7 @@ function CatalogContent() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#4a4e8f]" />
+              <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#a4ac86]" />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -143,7 +143,7 @@ export default function CatalogPage() {
     <Suspense fallback={
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#4a4e8f]" />
+          <div key={i} className="bg-surface border-2 border-border h-64 animate-pulse shadow-[4px_4px_0px_#a4ac86]" />
         ))}
       </div>
     }>

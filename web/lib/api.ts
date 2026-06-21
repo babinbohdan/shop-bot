@@ -59,18 +59,39 @@ export interface ProductsParams {
   per_page?: number;
 }
 
-export const getProducts = (params: ProductsParams = {}): Promise<Product[]> => {
-  const qs = new URLSearchParams();
-  if (params.category_id) qs.set("category_id", String(params.category_id));
-  if (params.sort) qs.set("sort", params.sort);
-  if (params.in_stock) qs.set("in_stock", "true");
-  if (params.page) qs.set("page", String(params.page));
-  if (params.per_page) qs.set("per_page", String(params.per_page));
-  return apiFetch(`/api/products?${qs}`);
+interface ProductsResponse {
+  items: Product[];
+  total: number;
+  page: number;
+  pages: number;
+  per_page: number;
+}
+
+const SORT_MAP: Record<string, string> = {
+  popular: "name",
+  newest: "newest",
+  price_asc: "price_asc",
+  price_desc: "price_desc",
 };
 
-export const searchProducts = (q: string): Promise<Product[]> =>
-  apiFetch(`/api/products/search?q=${encodeURIComponent(q)}`);
+export const getProducts = async (params: ProductsParams = {}): Promise<Product[]> => {
+  if (!params.category_id) return [];
+  const qs = new URLSearchParams();
+  qs.set("category_id", String(params.category_id));
+  if (params.sort) qs.set("sort", SORT_MAP[params.sort] ?? "name");
+  if (params.in_stock) qs.set("in_stock_only", "true");
+  if (params.page) qs.set("page", String(params.page));
+  if (params.per_page) qs.set("per_page", String(params.per_page));
+  const res = await apiFetch<ProductsResponse>(`/api/products?${qs}`);
+  return Array.isArray(res) ? res : (res.items ?? []);
+};
+
+export const searchProducts = async (q: string): Promise<Product[]> => {
+  const res = await apiFetch<ProductsResponse | Product[]>(
+    `/api/products/search?q=${encodeURIComponent(q)}`
+  );
+  return Array.isArray(res) ? res : (res as ProductsResponse).items ?? [];
+};
 
 export const getProduct = (id: number): Promise<Product> =>
   apiFetch(`/api/products/${id}`);

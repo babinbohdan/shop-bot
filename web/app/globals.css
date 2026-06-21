@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-nunito: "Nunito", sans-serif;
-}
-
-body {
-  font-family: var(--font-nunito), system-ui, sans-serif;
-}
+:root { --font-inter: "Inter", sans-serif; }
 
 html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  background-color: #0F0F1A;
+  color: #F0EDD8;
+}
 
 .line-clamp-2 {
   overflow: hidden;
@@ -20,7 +20,43 @@ html { scroll-behavior: smooth; }
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.35s ease both; }
+.fade-up { animation: fadeUp 0.4s ease both; }
+
+.card-bordered {
+  border: 1px solid #3A3A5C;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.card-bordered:hover { border-color: #C9A84C; background-color: #1C1C2E; }
+
+.btn-gold {
+  background: #C9A84C;
+  color: #0F0F1A;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-gold:hover  { background: #E8C96B; }
+.btn-gold:active { transform: scale(0.97); }
+
+.btn-outline {
+  border: 1px solid #C9A84C;
+  color: #C9A84C;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-outline:hover { background: #C9A84C; color: #0F0F1A; }
+
+.input-dark {
+  background: #1C1C2E;
+  border: 1px solid #3A3A5C;
+  color: #F0EDD8;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-dark::placeholder { color: #6B6A7A; }
+.input-dark:focus { border-color: #C9A84C; }

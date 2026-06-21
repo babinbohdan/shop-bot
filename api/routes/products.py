@@ -99,20 +99,19 @@ async def get_categories(db: AsyncSession = Depends(get_db)):
 
 @router.get("/products", response_model=ProductsResponse)
 async def get_products(
-    category_id: int = Query(..., description="ID категорії"),
+    category_id: int | None = Query(None, description="ID категорії (опціонально)"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
     price_min: float | None = Query(None, description="Мінімальна ціна"),
     price_max: float | None = Query(None, description="Максимальна ціна"),
-    in_stock_only: bool = Query(True, description="Тільки в наявності"),
-    sort: str = Query("name", description="name | price_asc | price_desc | discount"),
+    in_stock_only: bool = Query(False, description="Тільки в наявності"),
+    sort: str = Query("name", description="name | newest | price_asc | price_desc | discount"),
     db: AsyncSession = Depends(get_db),
 ):
     """Товари категорії з фільтрами та сортуванням."""
-    conditions = [
-        Product.category_id == category_id,
-        Product.is_active == True,
-    ]
+    conditions = [Product.is_active == True]
+    if category_id is not None:
+        conditions.append(Product.category_id == category_id)
     if in_stock_only:
         conditions.append(Product.in_stock == True)
     if price_min is not None:
@@ -125,12 +124,9 @@ async def get_products(
         order_col = Product.price.asc()
     elif sort == "price_desc":
         order_col = Product.price.desc()
+    elif sort == "newest":
+        order_col = Product.id.desc()
     elif sort == "discount":
-        # Товари зі знижкою спочатку (old_price IS NOT NULL), потім за % знижки
-        order_col = (
-            (Product.old_price.isnot(None)).desc(),
-        )
-        # Для PostgreSQL: NULLS LAST
         order_col = Product.old_price.desc().nulls_last()
     else:
         order_col = Product.name.asc()

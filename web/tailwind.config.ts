@@ -9,12 +9,20 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-nunito)", "Nunito", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
-        primary: "#2481cc",
-        danger: "#e53935",
-        success: "#43a047",
+        bg:           "#0F0F1A",
+        surface:      "#1C1C2E",
+        panel:        "#2D2D44",
+        border:       "#3A3A5C",
+        gold:         "#C9A84C",
+        "gold-light": "#E8C96B",
+        muted:        "#9B9A8A",
+        ink:          "#F0EDD8",
+        primary:      "#C9A84C",
+        danger:       "#E05555",
+        success:      "#4CAF7D",
       },
     },
   },

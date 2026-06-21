@@ -38,13 +38,10 @@ export default function CartPage() {
   if (count() === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
-        <div className="text-6xl mb-4">🛒</div>
-        <h1 className="text-2xl font-bold mb-2">Кошик порожній</h1>
-        <p className="text-gray-400 mb-6">Додайте товари зі сторінки каталогу</p>
-        <Link
-          href="/catalog"
-          className="inline-block bg-primary text-white font-bold px-8 py-3 rounded-full hover:bg-primary/90 transition-colors"
-        >
+        <div className="text-6xl mb-4 text-muted">◻</div>
+        <h1 className="text-2xl font-semibold mb-2 text-ink">Кошик порожній</h1>
+        <p className="text-muted mb-8">Додайте товари зі сторінки каталогу</p>
+        <Link href="/catalog" className="btn-gold px-8 py-3">
           Перейти до каталогу
         </Link>
       </div>
@@ -53,64 +50,48 @@ export default function CartPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Кошик ({count()} товари)</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-xl font-semibold text-ink">Кошик</h1>
+        <span className="text-sm text-muted">{count()} товари</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Items list */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Items */}
         <div className="flex-1 space-y-3">
           {items.map(({ product, quantity }) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl shadow-sm p-4 flex gap-4 items-center"
-            >
-              {/* Image */}
-              <div className="relative w-20 h-20 shrink-0 bg-gray-50 rounded-xl overflow-hidden">
+            <div key={product.id} className="card-bordered bg-surface rounded-lg p-4 flex gap-4 items-center">
+              <div className="relative w-16 h-16 shrink-0 bg-panel rounded overflow-hidden">
                 {product.image_url ? (
-                  <Image
-                    src={product.image_url}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-1"
-                  />
+                  <Image src={product.image_url} alt={product.name} fill className="object-contain p-1" />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-3xl">🧸</div>
+                  <div className="absolute inset-0 flex items-center justify-center text-xl text-muted">✦</div>
                 )}
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
-                <Link href={`/catalog/${product.id}`} className="font-medium text-sm line-clamp-2 hover:text-primary">
+                <Link href={`/catalog/${product.id}`} className="text-sm text-ink hover:text-gold transition-colors line-clamp-2">
                   {product.name}
                 </Link>
-                <p className="text-primary font-bold mt-1">{product.price} ₴</p>
+                <p className="text-gold font-semibold mt-0.5 text-sm">{product.price} ₴</p>
               </div>
 
-              {/* Qty controls */}
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => updateQty(product.id, quantity - 1)}
-                  className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-100
-                             flex items-center justify-center text-lg font-bold"
-                >
+                <button onClick={() => updateQty(product.id, quantity - 1)}
+                  className="w-7 h-7 rounded border border-border hover:border-gold text-muted hover:text-gold transition-colors flex items-center justify-center text-base">
                   −
                 </button>
-                <span className="w-6 text-center font-semibold">{quantity}</span>
-                <button
-                  onClick={() => updateQty(product.id, quantity + 1)}
-                  className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-100
-                             flex items-center justify-center text-lg font-bold"
-                >
+                <span className="w-6 text-center text-sm font-medium text-ink">{quantity}</span>
+                <button onClick={() => updateQty(product.id, quantity + 1)}
+                  className="w-7 h-7 rounded border border-border hover:border-gold text-muted hover:text-gold transition-colors flex items-center justify-center text-base">
                   +
                 </button>
               </div>
 
-              {/* Subtotal + remove */}
               <div className="text-right shrink-0">
-                <p className="font-bold text-sm">{product.price * quantity} ₴</p>
-                <button
-                  onClick={() => removeItem(product.id)}
-                  className="text-xs text-gray-400 hover:text-danger mt-1"
-                >
+                <p className="text-sm font-semibold text-ink">{product.price * quantity} ₴</p>
+                <button onClick={() => removeItem(product.id)}
+                  className="text-xs text-muted hover:text-danger transition-colors mt-1">
                   Видалити
                 </button>
               </div>
@@ -118,15 +99,15 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Order summary */}
-        <div className="lg:w-80 shrink-0">
-          <div className="bg-white rounded-2xl shadow-sm p-5 lg:sticky lg:top-20">
-            <h2 className="font-bold text-lg mb-4">Підсумок</h2>
+        {/* Summary */}
+        <div className="lg:w-72 shrink-0">
+          <div className="card-bordered bg-surface rounded-lg p-5 lg:sticky lg:top-20">
+            <h2 className="text-sm font-semibold text-ink uppercase tracking-wider mb-4">Підсумок</h2>
 
             <div className="space-y-2 text-sm mb-4">
               <div className="flex justify-between">
-                <span className="text-gray-500">Товарів на суму</span>
-                <span>{subtotal} ₴</span>
+                <span className="text-muted">Товарів на суму</span>
+                <span className="text-ink">{subtotal} ₴</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-success">
@@ -134,37 +115,31 @@ export default function CartPage() {
                   <span>−{discountAmount} ₴</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
-                <span>До сплати</span>
-                <span className="text-primary">{finalTotal} ₴</span>
+              <div className="flex justify-between font-semibold pt-3 border-t border-border">
+                <span className="text-ink">До сплати</span>
+                <span className="text-gold text-base">{finalTotal} ₴</span>
               </div>
             </div>
 
-            {/* Promo code */}
+            {/* Promo */}
             <div className="mb-4">
               <div className="flex gap-2">
                 <input
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                   placeholder="Промокод"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm
-                             focus:outline-none focus:border-primary"
+                  className="input-dark flex-1 px-3 py-2 text-sm"
                 />
                 <button
                   onClick={handlePromo}
                   disabled={promoLoading || !promoCode.trim()}
-                  className="px-3 py-2 bg-gray-100 rounded-xl text-sm font-semibold
-                             hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                  className="px-3 py-2 border border-border rounded text-sm text-muted hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
                 >
-                  {promoLoading ? "..." : "OK"}
+                  {promoLoading ? "..." : "ОК"}
                 </button>
               </div>
               {promo && (
-                <p
-                  className={`text-xs mt-1.5 ${
-                    promo.valid ? "text-success" : "text-danger"
-                  }`}
-                >
+                <p className={`text-xs mt-2 ${promo.valid ? "text-success" : "text-danger"}`}>
                   {promo.valid
                     ? `✓ Промокод застосовано: −${discountAmount} ₴`
                     : `✗ ${promo.message ?? "Промокод недійсний"}`}
@@ -174,8 +149,7 @@ export default function CartPage() {
 
             <Link
               href={`/checkout${promo?.valid ? `?promo=${promoCode}` : ""}`}
-              className="block w-full text-center bg-primary text-white font-bold py-3 rounded-xl
-                         hover:bg-primary/90 active:scale-95 transition-all"
+              className="btn-gold block w-full text-center py-3 text-sm"
             >
               Оформити замовлення →
             </Link>

@@ -5,81 +5,82 @@ import ProductCard from "@/components/ProductCard";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [categories, featuredProducts] = await Promise.all([
-    getCategories().catch(() => []),
-    getProducts({ per_page: 8, sort: "popular" }).catch(() => []),
-  ]);
+  const categories = await getCategories().catch(() => []);
+  const firstCat = categories[0]?.id;
+  const featuredProducts = firstCat
+    ? await getProducts({ category_id: firstCat, per_page: 8 }).catch(() => [])
+    : [];
 
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-primary via-[#1a6ab5] to-[#0d4d8a] text-white py-16 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
+      {/* Hero */}
+      <section className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1">
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
+            <p className="text-gold text-sm font-medium tracking-widest uppercase mb-4">Офіційний магазин</p>
+            <h1 className="text-4xl md:text-6xl font-bold text-ink leading-tight mb-6">
               Іграшки, що<br />
-              <span className="text-yellow-300">розвивають</span> і радують
+              <span className="text-gold">надихають</span>
             </h1>
-            <p className="text-blue-100 text-lg mb-8">
-              Широкий вибір якісних дитячих іграшок. Доставка по всій Україні.
+            <p className="text-muted text-lg mb-8 max-w-md">
+              Якісні дитячі іграшки для розвитку та радості. Доставка по всій Україні.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/catalog"
-                className="bg-white text-primary font-bold px-6 py-3 rounded-full
-                           hover:bg-yellow-300 hover:text-gray-800 transition-colors"
-              >
-                Переглянути каталог →
+              <Link href="/catalog" className="btn-gold px-6 py-3 text-sm">
+                Переглянути каталог
               </Link>
-              <Link
-                href="/catalog?sort=newest"
-                className="border border-white/50 text-white font-semibold px-6 py-3 rounded-full
-                           hover:bg-white/10 transition-colors"
-              >
+              <Link href="/catalog?sort=newest" className="btn-outline px-6 py-3 text-sm">
                 Новинки
               </Link>
             </div>
           </div>
-          <div className="text-8xl md:text-9xl select-none">🧸</div>
+
+          {/* Декоративний блок */}
+          <div className="shrink-0 w-64 h-64 border border-border rounded-lg bg-surface flex items-center justify-center relative">
+            <div className="absolute inset-4 border border-gold/20 rounded" />
+            <span className="text-7xl">🧸</span>
+          </div>
         </div>
       </section>
 
-      {/* ── Trust bar ────────────────────────────────────────────────────── */}
-      <section className="border-b border-gray-100">
+      {/* Trust bar */}
+      <section className="border-b border-border bg-surface">
         <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: "🚚", text: "Нова Пошта / Укрпошта" },
-            { icon: "✅", text: "Гарантія якості" },
-            { icon: "🔄", text: "Легкий обмін" },
-            { icon: "💳", text: "Оплата при отриманні" },
+            { icon: "→", text: "Нова Пошта / Укрпошта" },
+            { icon: "✓", text: "Гарантія якості" },
+            { icon: "↺", text: "Легкий обмін" },
+            { icon: "◈", text: "Оплата при отриманні" },
           ].map((item) => (
-            <div key={item.text} className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="text-xl">{item.icon}</span>
+            <div key={item.text} className="flex items-center gap-2 text-sm text-muted">
+              <span className="text-gold">{item.icon}</span>
               <span>{item.text}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
-        {/* ── Categories ───────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 py-12 space-y-14">
+        {/* Categories */}
         {categories.length > 0 && (
           <section>
-            <h2 className="text-2xl font-bold mb-6">Категорії</h2>
+            <div className="flex items-center gap-4 mb-6">
+              <h2 className="text-xl font-semibold text-ink">Категорії</h2>
+              <div className="flex-1 h-px bg-border" />
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {categories.slice(0, 12).map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/catalog?category_id=${cat.id}`}
-                  className="bg-white rounded-2xl p-4 text-center shadow-sm hover:shadow-md
-                             hover:border-primary border border-transparent transition-all group"
+                  className="card-bordered bg-surface rounded-lg p-4 text-center group"
                 >
-                  <div className="text-3xl mb-2">🎁</div>
-                  <div className="text-sm font-medium text-gray-700 group-hover:text-primary">
+                  <div className="text-2xl mb-2 text-gold group-hover:scale-110 transition-transform">✦</div>
+                  <div className="text-xs font-medium text-ink group-hover:text-gold transition-colors line-clamp-2">
                     {cat.name}
                   </div>
                   {cat.product_count > 0 && (
-                    <div className="text-xs text-gray-400 mt-1">{cat.product_count} товарів</div>
+                    <div className="text-xs text-muted mt-1">{cat.product_count}</div>
                   )}
                 </Link>
               ))}
@@ -87,12 +88,15 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Featured products ─────────────────────────────────────────────── */}
+        {/* Featured products */}
         {featuredProducts.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Популярні товари</h2>
-              <Link href="/catalog" className="text-primary text-sm font-semibold hover:underline">
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-semibold text-ink">Популярні товари</h2>
+                <div className="h-px bg-border w-24 hidden md:block" />
+              </div>
+              <Link href="/catalog" className="text-gold text-sm hover:text-gold-light transition-colors">
                 Всі товари →
               </Link>
             </div>
@@ -104,14 +108,12 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Promo banner ──────────────────────────────────────────────────── */}
-        <section className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-3xl p-8 text-center">
-          <p className="text-sm font-semibold text-orange-800 mb-1">Перше замовлення</p>
-          <h3 className="text-2xl font-extrabold text-white mb-2">Знижка 10%</h3>
-          <p className="text-white/90 mb-4">
-            Введіть промокод при оформленні замовлення
-          </p>
-          <div className="inline-block bg-white text-orange-600 font-bold text-xl px-6 py-2 rounded-full tracking-widest">
+        {/* Promo */}
+        <section className="border border-gold/30 rounded-lg p-8 text-center bg-surface">
+          <p className="text-gold text-xs font-medium tracking-widest uppercase mb-2">Перше замовлення</p>
+          <h3 className="text-3xl font-bold text-ink mb-2">Знижка 10%</h3>
+          <p className="text-muted mb-5 text-sm">Введіть промокод при оформленні замовлення</p>
+          <div className="inline-block border border-gold text-gold font-bold text-lg px-8 py-2 rounded tracking-widest">
             WELCOME10
           </div>
         </section>

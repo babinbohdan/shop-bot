@@ -12,11 +12,10 @@ import type { Product } from "@/lib/api";
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const addItem = useCartStore((s) => s.addItem);
-
   const [product, setProduct] = useState<Product | null>(null);
   const [similar, setSimilar] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [added, setAdded] = useState(false);
+  const [added,   setAdded]   = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -37,132 +36,103 @@ export default function ProductPage() {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-10 animate-pulse">
-        <div className="h-3 bg-panel rounded w-48 mb-8" />
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-panel rounded-lg h-80" />
-          <div className="space-y-4">
-            <div className="h-6 bg-panel rounded w-3/4" />
-            <div className="h-4 bg-panel rounded w-1/2" />
-            <div className="h-10 bg-panel rounded w-32" />
-          </div>
+  if (loading) return (
+    <div className="max-w-5xl mx-auto px-4 py-10 animate-pulse">
+      <div className="h-3 bg-panel border-2 border-ink w-48 mb-8" />
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="bg-panel border-2 border-ink h-80" />
+        <div className="space-y-4">
+          <div className="h-6 bg-panel border-2 border-ink w-3/4" />
+          <div className="h-4 bg-panel border-2 border-ink w-1/2" />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (!product) {
-    return (
-      <div className="max-w-5xl mx-auto px-4 py-20 text-center">
-        <div className="text-5xl text-muted mb-4">✦</div>
-        <p className="text-ink mb-2">Товар не знайдено</p>
-        <Link href="/catalog" className="text-gold hover:text-gold-light transition-colors">
-          ← Повернутись до каталогу
-        </Link>
-      </div>
-    );
-  }
+  if (!product) return (
+    <div className="max-w-5xl mx-auto px-4 py-20 text-center">
+      <div className="text-5xl mb-4">😕</div>
+      <p className="font-black text-ink uppercase mb-2">Товар не знайдено</p>
+      <Link href="/catalog" className="text-ink font-black uppercase hover:underline">← До каталогу</Link>
+    </div>
+  );
 
   const discount = product.old_price
-    ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
-    : 0;
+    ? Math.round(((product.old_price - product.price) / product.old_price) * 100) : 0;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-muted mb-6 flex gap-2 items-center">
-        <Link href="/" className="hover:text-gold transition-colors">Головна</Link>
-        <span className="text-border">›</span>
-        <Link href="/catalog" className="hover:text-gold transition-colors">Каталог</Link>
+      <nav className="text-xs font-bold text-muted mb-6 flex gap-2 items-center flex-wrap uppercase tracking-wide">
+        <Link href="/" className="hover:text-ink transition-colors">Головна</Link>
+        <span>›</span>
+        <Link href="/catalog" className="hover:text-ink transition-colors">Каталог</Link>
         {product.category_name && (
           <>
-            <span className="text-border">›</span>
-            <Link href={`/catalog?category_id=${product.category_id}`} className="hover:text-gold transition-colors">
-              {product.category_name}
-            </Link>
+            <span>›</span>
+            <Link href={`/catalog?category_id=${product.category_id}`} className="hover:text-ink transition-colors">{product.category_name}</Link>
           </>
         )}
-        <span className="text-border">›</span>
+        <span>›</span>
         <span className="text-ink line-clamp-1">{product.name}</span>
       </nav>
 
-      {/* Product */}
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
-        {/* Image */}
-        <div className="card-bordered bg-surface rounded-lg overflow-hidden relative h-72 md:h-96">
+      <div className="grid md:grid-cols-2 gap-8 mb-14">
+        <div className="relative h-72 md:h-96 bg-panel border-2 border-ink shadow-[6px_6px_0px_#111] overflow-hidden">
           {discount > 0 && (
-            <span className="absolute top-3 left-3 z-10 bg-gold text-bg text-xs font-bold px-2.5 py-1 rounded">
+            <span className="absolute top-0 left-0 z-10 bg-accent text-white text-xs font-black px-3 py-1 uppercase tracking-wider">
               -{discount}%
             </span>
           )}
           {product.image_url ? (
-            <Image src={product.image_url} alt={product.name} fill
-              className="object-contain p-4" sizes="(max-width: 768px) 100vw, 50vw" />
+            <Image src={product.image_url} alt={product.name} fill className="object-contain p-4" sizes="(max-width: 768px) 100vw, 50vw" />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-6xl text-muted">✦</div>
+            <div className="absolute inset-0 flex items-center justify-center text-7xl">🧸</div>
           )}
         </div>
 
-        {/* Details */}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold text-ink mb-2">{product.name}</h1>
-
+          <h1 className="text-2xl font-black text-ink mb-2 uppercase leading-tight">{product.name}</h1>
           {product.vendor && (
-            <p className="text-xs text-muted mb-4 uppercase tracking-wide">{product.vendor}</p>
+            <p className="text-xs font-black text-muted uppercase tracking-widest mb-4">{product.vendor}</p>
           )}
-
           <div className="flex items-end gap-3 mb-4">
-            <span className="text-3xl font-bold text-gold">{product.price} ₴</span>
-            {product.old_price && (
-              <span className="text-base text-muted line-through">{product.old_price} ₴</span>
-            )}
+            <span className="text-4xl font-black text-ink">{product.price} ₴</span>
+            {product.old_price && <span className="text-base text-muted line-through">{product.old_price} ₴</span>}
           </div>
-
           <div className="mb-6">
             {product.in_stock ? (
-              <span className="text-sm text-success">● В наявності</span>
+              <span className="inline-block bg-primary border-2 border-ink text-ink text-xs font-black px-3 py-1 uppercase tracking-wider shadow-[2px_2px_0px_#111]">
+                ✓ В наявності
+              </span>
             ) : (
-              <span className="text-sm text-muted">○ Немає в наявності</span>
+              <span className="inline-block bg-white border-2 border-ink text-muted text-xs font-black px-3 py-1 uppercase tracking-wider">
+                Немає в наявності
+              </span>
             )}
           </div>
-
           <div className="space-y-3">
             <button onClick={handleAdd} disabled={!product.in_stock || added}
-              className="btn-gold px-8 py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed w-full md:w-auto">
-              {added ? "✓ Додано до кошика" : "+ В кошик"}
+              className="btn-pill px-8 py-3 text-sm w-full md:w-auto">
+              {added ? "✓ ДОДАНО" : "🛒 В КОШИК"}
             </button>
             {added && (
-              <Link href="/cart" className="block text-sm text-gold hover:text-gold-light transition-colors">
+              <Link href="/cart" className="block text-xs font-black text-ink uppercase hover:underline">
                 → Перейти до кошика
               </Link>
             )}
           </div>
-
           {product.description && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Опис</h3>
-              <p className="text-sm text-muted leading-relaxed">{product.description}</p>
-            </div>
-          )}
-
-          {(product.barcode || product.category_name) && (
-            <div className="mt-4 text-xs text-muted/60 space-y-1">
-              {product.category_name && <p>Категорія: {product.category_name}</p>}
-              {product.barcode && <p>Штрихкод: {product.barcode}</p>}
+            <div className="mt-6 pt-6 border-t-2 border-ink">
+              <h3 className="text-xs font-black text-ink uppercase tracking-widest mb-3">Опис</h3>
+              <p className="text-sm text-muted font-medium leading-relaxed">{product.description}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Similar */}
       {similar.length > 0 && (
         <section>
-          <div className="flex items-center gap-4 mb-6">
-            <h2 className="text-lg font-semibold text-ink">Схожі товари</h2>
-            <div className="flex-1 h-px bg-border" />
-          </div>
+          <h2 className="text-2xl font-black text-ink mb-5 uppercase tracking-tight">Схожі товари</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {similar.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
